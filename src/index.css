@@ -1,0 +1,270 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* SplitNGo Design System - Dark theme with vibrant accents */
+
+@layer base {
+  :root {
+    /* Dark Theme Base Colors */
+    --background: 220 27% 11%;
+    --foreground: 220 15% 95%;
+
+    --card: 220 27% 13%;
+    --card-foreground: 220 15% 95%;
+
+    --popover: 220 27% 13%;
+    --popover-foreground: 220 15% 95%;
+
+    /* Primary - Teal Accent */
+    --primary: 178 94% 40%;
+    --primary-foreground: 220 27% 11%;
+
+    /* Secondary - Sky Blue */
+    --secondary: 199 89% 48%;
+    --secondary-foreground: 220 27% 11%;
+
+    /* Muted elements */
+    --muted: 220 27% 16%;
+    --muted-foreground: 220 15% 70%;
+
+    /* Accent - Emerald */
+    --accent: 160 84% 39%;
+    --accent-foreground: 220 27% 11%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 220 15% 95%;
+
+    --border: 220 27% 18%;
+    --input: 220 27% 16%;
+    --ring: 178 94% 40%;
+
+    --radius: 1rem;
+
+    /* Custom Design Tokens */
+    --navy-deep: 220 27% 8%;
+    --navy-light: 220 27% 15%;
+    --teal-glow: 178 94% 45%;
+    --sky-glow: 199 89% 55%;
+    --emerald-glow: 160 84% 45%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)));
+    --gradient-hero: linear-gradient(135deg, hsl(var(--navy-deep)), hsl(var(--background)));
+    --gradient-card: linear-gradient(135deg, hsl(var(--card)), hsl(var(--navy-light)));
+    
+    /* Glass Effects */
+    --glass-bg: hsla(220, 27%, 13%, 0.8);
+    --glass-border: hsla(220, 15%, 95%, 0.1);
+    
+    /* Shadows */
+    --shadow-glow: 0 0 40px hsla(var(--primary), 0.3);
+    --shadow-card: 0 10px 30px -10px hsla(220, 27%, 8%, 0.5);
+    --shadow-elegant: 0 20px 40px -12px hsla(220, 27%, 8%, 0.6);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    --transition-glow: all 0.2s ease-in-out;
+
+    --radius: 1rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-inter;
+  }
+}
+
+@layer components {
+  /* Glass Card Effect */
+  .glass-card {
+    @apply bg-card/80 backdrop-blur-xl border border-white/10;
+    box-shadow: var(--shadow-card);
+  }
+  
+  /* Hero Button */
+  .btn-hero {
+    @apply px-8 py-4 rounded-2xl font-semibold transition-all duration-300;
+    background: var(--gradient-primary);
+    color: hsl(var(--primary-foreground));
+  }
+  
+  .btn-hero:hover {
+    box-shadow: var(--shadow-glow);
+    transform: scale(1.05);
+  }
+  
+  /* Secondary Button */
+  .btn-secondary {
+    @apply bg-transparent border-2 px-8 py-4 rounded-2xl font-semibold transition-all duration-300;
+    border-color: hsl(var(--primary) / 0.3);
+    color: hsl(var(--foreground));
+  }
+  
+  .btn-secondary:hover {
+    border-color: hsl(var(--primary));
+    background-color: hsl(var(--primary) / 0.1);
+  }
+  
+  /* Feature Card */
+  .feature-card {
+    @apply p-8 rounded-2xl transition-all duration-300;
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-card);
+  }
+  
+  .feature-card:hover {
+    background-color: hsl(var(--card) / 0.9);
+    box-shadow: var(--shadow-elegant);
+  }
+  
+  /* Section Padding */
+  .section-padding {
+    @apply py-20 px-6 lg:px-8;
+  }
+  
+  /* Gradient Text */
+  .gradient-text {
+    background: var(--gradient-primary);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+  
+  /* Smooth Scroll */
+  .smooth-scroll {
+    scroll-behavior: smooth;
+  }
+  
+  /* Hover Scale Animation */
+  .hover-scale {
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .hover-scale:hover {
+    transform: scale(1.05);
+  }
+
+  /* Enhanced Glass Effects */
+  .glass-auth {
+    @apply bg-card/60 backdrop-blur-2xl border border-white/20 shadow-elegant;
+    border-radius: 1.5rem;
+  }
+
+  /* Focus Glow Effects */
+  .focus-glow {
+    transition: var(--transition-glow);
+  }
+
+  .focus-glow:focus-within {
+    box-shadow: 0 0 0 2px hsl(var(--primary)), var(--shadow-glow);
+    border-color: hsl(var(--primary));
+  }
+
+  /* Page Transition */
+  .page-transition {
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  /* Responsive Container */
+  .responsive-container {
+    @apply max-w-screen-lg mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Mobile Touch Targets */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Card Hover Effects */
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-elegant hover:scale-[1.02];
+  }
+
+  /* Button Animations */
+  .btn-animate {
+    @apply transition-all duration-200 active:scale-95;
+  }
+
+  /* Text Animations */
+  .animate-text {
+    @apply opacity-0 translate-y-4;
+    animation: fade-in-up 0.6s ease-out forwards;
+  }
+
+  .animate-text:nth-child(2) { animation-delay: 0.1s; }
+  .animate-text:nth-child(3) { animation-delay: 0.2s; }
+  .animate-text:nth-child(4) { animation-delay: 0.3s; }
+  .animate-text:nth-child(5) { animation-delay: 0.4s; }
+  
+  /* Back to Top Button */
+  .back-to-top {
+    @apply fixed bottom-6 right-6 z-50 w-12 h-12 bg-primary text-primary-foreground rounded-full shadow-glow;
+    @apply flex items-center justify-center transition-all duration-300;
+    @apply hover:scale-110 active:scale-95;
+  }
+  }
