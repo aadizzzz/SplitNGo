@@ -331,10 +331,80 @@ const Auth = () => {
                 <TabsContent value="signup" className="space-y-4">
                   <form onSubmit={handleSignup} className="space-y-4">
                     <div className="space-y-2">
-<truncated 66 lines>
+                      <Label htmlFor="signup-name" className="text-sm font-medium">Full Name</Label>
+                      <div className="relative focus-glow">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                        <Input
+                          id="signup-name"
+                          type="text"
+                          placeholder="Enter your full name"
+                          className="pl-10 h-12 touch-target transition-all duration-200 hover:border-primary/50"
+                          value={signupData.fullName}
+                          onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-email" className="text-sm font-medium">Email</Label>
+                      <div className="relative focus-glow">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                        <Input
+                          id="signup-email"
+                          type="email"
+                          placeholder="Enter your email"
+                          className="pl-10 h-12 touch-target transition-all duration-200 hover:border-primary/50"
+                          value={signupData.email}
+                          onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password" className="text-sm font-medium">Password</Label>
+                      <div className="relative focus-glow">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                        <Input
+                          id="signup-password"
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder="Create a password"
+                          className="pl-10 pr-10 h-12 touch-target transition-all duration-200 hover:border-primary/50"
+                          value={signupData.password}
+                          onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
+                          required
+                        />
+                        <button
+                          type="button"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors touch-target"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-confirm" className="text-sm font-medium">Confirm Password</Label>
+                      <div className="relative focus-glow">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                        <Input
+                          id="signup-confirm"
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder="Confirm your password"
+                          className="pl-10 h-12 touch-target transition-all duration-200 hover:border-primary/50"
+                          value={signupData.confirmPassword}
+                          onChange={(e) => setSignupData({ ...signupData, confirmPassword: e.target.value })}
+                          required
+                        />
+                      </div>
+                    </div>
+
                     <Button type="submit" className="w-full btn-hero btn-animate h-12 touch-target" disabled={loading}>
                       {loading ? 'Creating account...' : 'Create Account'}
                     </Button>
+
                   </form>
                 </TabsContent>
               </Tabs>
