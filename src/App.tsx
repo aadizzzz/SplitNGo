@@ -7,9 +7,11 @@ import Layout from "./components/Layout";
 import BackToTop from "./components/BackToTop";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ProtectedRoute from "./components/ProtectedRoute";
+import RoleProtectedRoute from "./components/RoleProtectedRoute";
 import { AuthProvider } from "./hooks/useAuth";
 import Home from "./pages/Home";
 import Results from "./pages/Results";
+import Booking from "./pages/Booking";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
@@ -37,6 +39,13 @@ import Error408 from "./pages/errors/Error408";
 import Error503 from "./pages/errors/Error503";
 import Offline from "./pages/errors/Offline";
 
+// Admin Dashboards
+import SuperAdminDashboard from "./pages/admin/SuperAdminDashboard";
+import ZoneAdminDashboard from "./pages/admin/ZoneAdminDashboard";
+import DivisionAdminDashboard from "./pages/admin/DivisionAdminDashboard";
+import StationAdminDashboard from "./pages/admin/StationAdminDashboard";
+import TTEDashboard from "./pages/admin/TTEDashboard";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -53,6 +62,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={<ProtectedRoute><Layout><Profile /></Layout></ProtectedRoute>} />
             <Route path="/results" element={<Results />} />
+            <Route path="/booking" element={<ProtectedRoute><Booking /></ProtectedRoute>} />
             <Route path="/how-it-works" element={<Layout><HowItWorks /></Layout>} />
             <Route path="/features" element={<Layout><Features /></Layout>} />
             <Route path="/pricing" element={<Layout><Pricing /></Layout>} />
@@ -67,6 +77,13 @@ const App = () => (
             <Route path="/safety" element={<Layout><Safety /></Layout>} />
             <Route path="/terms-of-service" element={<Layout><TermsOfService /></Layout>} />
             <Route path="/privacy-policy" element={<Layout><PrivacyPolicy /></Layout>} />
+            
+            {/* Admin Routes */}
+            <Route path="/admin/super" element={<RoleProtectedRoute requiredRole="super_admin"><Layout><SuperAdminDashboard /></Layout></RoleProtectedRoute>} />
+            <Route path="/admin/zone" element={<RoleProtectedRoute requiredRole="zone_admin"><Layout><ZoneAdminDashboard /></Layout></RoleProtectedRoute>} />
+            <Route path="/admin/division" element={<RoleProtectedRoute requiredRole="division_admin"><Layout><DivisionAdminDashboard /></Layout></RoleProtectedRoute>} />
+            <Route path="/admin/station" element={<RoleProtectedRoute requiredRole="station_admin"><Layout><StationAdminDashboard /></Layout></RoleProtectedRoute>} />
+            <Route path="/admin/tte" element={<RoleProtectedRoute requiredRole="tte"><Layout><TTEDashboard /></Layout></RoleProtectedRoute>} />
             
             {/* Error Pages */}
             <Route path="/500" element={<Error500 />} />
@@ -87,3 +104,4 @@ const App = () => (
 );
 
 export default App;
+

@@ -7,19 +7,56 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          actor_id: string
+          created_at: string
+          details: Json | null
+          id: string
+          ip_address: string | null
+          target_id: string | null
+          target_role: Database["public"]["Enums"]["app_role"] | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          target_id?: string | null
+          target_role?: Database["public"]["Enums"]["app_role"] | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          target_id?: string | null
+          target_role?: Database["public"]["Enums"]["app_role"] | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       bookings: {
         Row: {
           arrival_time: string
           booking_data: Json | null
           booking_reference: string
           coach_class: string
+          coach_no: string | null
           created_at: string
           departure_time: string
           from_station: string
@@ -28,9 +65,16 @@ export type Database = {
           journey_date: string
           layover_stations: string[] | null
           passenger_count: number
+          passenger_details: Json | null
+          primary_id_number: string | null
+          primary_id_type: string | null
+          seat_no: string | null
+          seat_type: string | null
           status: string
           to_station: string
           total_amount: number
+          train_name: string | null
+          train_no: string | null
           updated_at: string
           user_id: string
         }
@@ -39,6 +83,7 @@ export type Database = {
           booking_data?: Json | null
           booking_reference: string
           coach_class: string
+          coach_no?: string | null
           created_at?: string
           departure_time: string
           from_station: string
@@ -47,9 +92,16 @@ export type Database = {
           journey_date: string
           layover_stations?: string[] | null
           passenger_count?: number
+          passenger_details?: Json | null
+          primary_id_number?: string | null
+          primary_id_type?: string | null
+          seat_no?: string | null
+          seat_type?: string | null
           status?: string
           to_station: string
           total_amount: number
+          train_name?: string | null
+          train_no?: string | null
           updated_at?: string
           user_id: string
         }
@@ -58,6 +110,7 @@ export type Database = {
           booking_data?: Json | null
           booking_reference?: string
           coach_class?: string
+          coach_no?: string | null
           created_at?: string
           departure_time?: string
           from_station?: string
@@ -66,13 +119,96 @@ export type Database = {
           journey_date?: string
           layover_stations?: string[] | null
           passenger_count?: number
+          passenger_details?: Json | null
+          primary_id_number?: string | null
+          primary_id_type?: string | null
+          seat_no?: string | null
+          seat_type?: string | null
           status?: string
           to_station?: string
           total_amount?: number
+          train_name?: string | null
+          train_no?: string | null
           updated_at?: string
           user_id?: string
         }
         Relationships: []
+      }
+      division_admins: {
+        Row: {
+          assigned_at: string
+          assigned_by: string
+          created_at: string
+          division_id: string
+          id: string
+          is_active: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by: string
+          created_at?: string
+          division_id: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string
+          created_at?: string
+          division_id?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "division_admins_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "divisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      divisions: {
+        Row: {
+          created_at: string
+          division_code: string
+          division_name: string
+          id: string
+          updated_at: string
+          zone_id: string
+        }
+        Insert: {
+          created_at?: string
+          division_code: string
+          division_name: string
+          id?: string
+          updated_at?: string
+          zone_id: string
+        }
+        Update: {
+          created_at?: string
+          division_code?: string
+          division_name?: string
+          id?: string
+          updated_at?: string
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "divisions_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -116,15 +252,243 @@ export type Database = {
         }
         Relationships: []
       }
+      railway_stations: {
+        Row: {
+          created_at: string
+          division_id: string
+          id: string
+          station_code: string
+          station_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          division_id: string
+          id?: string
+          station_code: string
+          station_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          division_id?: string
+          id?: string
+          station_code?: string
+          station_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "railway_stations_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "divisions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      station_admins: {
+        Row: {
+          assigned_at: string
+          assigned_by: string
+          created_at: string
+          id: string
+          is_active: boolean
+          station_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          station_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          station_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "station_admins_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "railway_stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ttes: {
+        Row: {
+          assigned_at: string
+          assigned_by: string
+          created_at: string
+          id: string
+          station_id: string
+          status: string
+          tte_code: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by: string
+          created_at?: string
+          id?: string
+          station_id: string
+          status?: string
+          tte_code: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string
+          created_at?: string
+          id?: string
+          station_id?: string
+          status?: string
+          tte_code?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ttes_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "railway_stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          id: string
+          is_active: boolean
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          id?: string
+          is_active?: boolean
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          id?: string
+          is_active?: boolean
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      zone_admins: {
+        Row: {
+          assigned_at: string
+          assigned_by: string
+          created_at: string
+          id: string
+          is_active: boolean
+          updated_at: string
+          user_id: string
+          zone_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          user_id: string
+          zone_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          updated_at?: string
+          user_id?: string
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zone_admins_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      zones: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+          zone_code: string
+          zone_name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          zone_code: string
+          zone_name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          zone_code?: string
+          zone_name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role:
+        | "super_admin"
+        | "zone_admin"
+        | "division_admin"
+        | "station_admin"
+        | "tte"
+        | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -251,6 +615,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: [
+        "super_admin",
+        "zone_admin",
+        "division_admin",
+        "station_admin",
+        "tte",
+        "user",
+      ],
+    },
   },
 } as const

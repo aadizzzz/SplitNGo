@@ -1,45 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock, MapPin, Users, Train, Route, Layers, Calendar, Zap } from 'lucide-react';
+import { ArrowLeft, Clock, MapPin, Users, Train, Route, Layers, Calendar, Zap, TrendingUp, CheckCircle2, AlertCircle, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ComboboxAutocomplete } from '@/components/ui/combobox-autocomplete';
 import { SearchData } from '@/components/SearchForm';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import LoadingSpinner from '@/components/LoadingSpinner';
-import { useTrainRoutes, Station } from '@/hooks/useTrainRoutes';
+import { useTrainRoutes, RouteResult, Station } from '@/hooks/useTrainRoutes';
+import { useStations } from '@/hooks/useStations';
 import { motion } from 'framer-motion';
-
-interface RouteResult {
-  trainId: string;
-  trainName: string;
-  sourceStation: Station;
-  destinationStation: Station;
-  duration: string;
-  distance: number;
-  type: 'direct' | 'layover';
-  segments?: Array<{
-    trainId: string;
-    trainName: string;
-    from: string;
-    to: string;
-    departure: string;
-    arrival: string;
-    distance: number;
-  }>;
-  layoverStation?: string;
-  layoverDuration?: string;
-}
 
 const Results = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { findRoutes } = useTrainRoutes();
+  const { filterStations } = useStations();
   const [routes, setRoutes] = useState<RouteResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const searchData = location.state?.searchData as SearchData;
+  const initialSearchData = location.state?.searchData as SearchData;
+  const [searchData, setSearchData] = useState<SearchData>(initialSearchData);
 
   useEffect(() => {
     if (!searchData) {
@@ -60,8 +45,7 @@ const Results = () => {
         setError(null);
         console.log('Fetching routes for:', searchData.sourceStation, '→', searchData.destinationStation);
         
-        const allowLayover = searchData.preference === 'allow-layover';
-        const foundRoutes = await findRoutes(searchData.sourceStation, searchData.destinationStation, allowLayover);
+        const foundRoutes = await findRoutes(searchData.sourceStation, searchData.destinationStation, searchData.preference);
         console.log('Found routes:', foundRoutes);
         
         setRoutes(foundRoutes);
@@ -75,7 +59,11 @@ const Results = () => {
     };
 
     loadRoutes();
-  }, [searchData?.sourceStation, searchData?.destinationStation, navigate]); // Remove findRoutes from dependencies
+  }, [searchData?.sourceStation, searchData?.destinationStation, searchData?.preference, searchData?.date, searchData?.passengers, navigate]);
+
+  const handleSearchUpdate = (field: keyof SearchData, value: string) => {
+    setSearchData(prev => ({ ...prev, [field]: value }));
+  };
 
   if (!searchData) {
     return null;
@@ -130,12 +118,40 @@ const Results = () => {
     }
   };
 
-  const getRouteBadge = (type: string, layoverStation?: string) => {
-    switch (type) {
-      case 'direct': return <Badge className="bg-green-500/20 text-green-300 border-green-500/30">Direct Route</Badge>;
-      case 'layover': return <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30">Split Journey - Layover via {layoverStation}</Badge>;
-      default: return null;
+  const getCategoryLabel = (category: string) => {
+    switch (category) {
+      case 'best-seat-chance': return 'Best Seat Chance';
+      case 'high-confidence-split': return 'High Confidence Split';
+      case 'same-train-segment': return 'Same Train Split';
+      case 'cross-train-layover': return 'Cross-Train Layover';
+      case 'direct-route': return 'Direct Route';
+      case 'low-probability': return 'Low Probability';
+      default: return category;
     }
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'best-seat-chance': return 'bg-green-500/20 text-green-300 border-green-500/30';
+      case 'high-confidence-split': return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+      case 'same-train-segment': return 'bg-purple-500/20 text-purple-300 border-purple-500/30';
+      case 'cross-train-layover': return 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30';
+      case 'direct-route': return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
+      case 'low-probability': return 'bg-orange-500/20 text-orange-300 border-orange-500/30';
+      default: return 'bg-muted';
+    }
+  };
+
+  const getConfidenceColor = (confidence: number) => {
+    if (confidence >= 80) return 'text-green-400';
+    if (confidence >= 60) return 'text-blue-400';
+    if (confidence >= 40) return 'text-yellow-400';
+    return 'text-orange-400';
+  };
+
+  const getConfidenceIcon = (confidence: number) => {
+    if (confidence >= 70) return <CheckCircle2 className="w-5 h-5 text-green-400" />;
+    return <AlertCircle className="w-5 h-5 text-yellow-400" />;
   };
 
   return (
@@ -178,26 +194,92 @@ const Results = () => {
             Back to Search
           </Button>
 
-          {/* Search Summary */}
+          {/* Editable Search Bar */}
           <Card className="glass-card p-6 mb-8">
-            <div className="flex flex-wrap items-center gap-6 text-sm">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-primary" />
-                <span className="font-semibold">{searchData.sourceStation}</span>
-                <span className="text-muted-foreground">→</span>
-                <span className="font-semibold">{searchData.destinationStation}</span>
+            <h2 className="text-lg font-semibold mb-4 text-foreground">Search Criteria</h2>
+            <div className="grid md:grid-cols-5 gap-4">
+              {/* Source Station */}
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-primary" />
+                  From
+                </label>
+                <ComboboxAutocomplete
+                  value={searchData.sourceStation}
+                  onSelect={(value) => handleSearchUpdate('sourceStation', value)}
+                  filterFunction={filterStations}
+                  placeholder="Select source"
+                  searchPlaceholder="Search stations..."
+                  emptyText="No stations found."
+                />
               </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-primary" />
-                <span>{formatDate(searchData.date)}</span>
+
+              {/* Destination Station */}
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-secondary" />
+                  To
+                </label>
+                <ComboboxAutocomplete
+                  value={searchData.destinationStation}
+                  onSelect={(value) => handleSearchUpdate('destinationStation', value)}
+                  filterFunction={filterStations}
+                  placeholder="Select destination"
+                  searchPlaceholder="Search stations..."
+                  emptyText="No stations found."
+                />
               </div>
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-primary" />
-                <span>{searchData.passengers} {searchData.passengers === '1' ? 'Passenger' : 'Passengers'}</span>
+
+              {/* Date */}
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-primary" />
+                  Date
+                </label>
+                <Input
+                  type="date"
+                  value={searchData.date}
+                  onChange={(e) => handleSearchUpdate('date', e.target.value)}
+                  className="bg-background/50 border-border/40"
+                />
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">Preference:</span>
-                <span className="font-medium">{getPreferenceText(searchData.preference)}</span>
+
+              {/* Passengers */}
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground flex items-center gap-2">
+                  <Users className="w-4 h-4 text-primary" />
+                  Passengers
+                </label>
+                <Select value={searchData.passengers} onValueChange={(value) => handleSearchUpdate('passengers', value)}>
+                  <SelectTrigger className="bg-background/50 border-border/40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+                      <SelectItem key={num} value={num.toString()}>
+                        {num} {num === 1 ? 'Passenger' : 'Passengers'}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Preference */}
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground flex items-center gap-2">
+                  <Settings className="w-4 h-4 text-primary" />
+                  Preference
+                </label>
+                <Select value={searchData.preference} onValueChange={(value) => handleSearchUpdate('preference', value)}>
+                  <SelectTrigger className="bg-background/50 border-border/40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="full-journey">Full Journey</SelectItem>
+                    <SelectItem value="allow-split">Allow Split</SelectItem>
+                    <SelectItem value="allow-layover">Allow Layover</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </Card>
@@ -206,7 +288,7 @@ const Results = () => {
           <div className="mb-6">
             <h1 className="text-3xl font-bold mb-2">Available Routes</h1>
             <p className="text-muted-foreground">
-              Found {routes.length} direct route options for your journey
+              Found {routes.length} route options - sorted by seat confirmation probability
             </p>
           </div>
 
@@ -224,36 +306,56 @@ const Results = () => {
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                       {/* Route Info */}
                       <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                          {getRouteIcon(route.type)}
-                          <div>
-                            <h3 className="font-semibold text-foreground">{route.trainName}</h3>
-                            <p className="text-sm text-muted-foreground">Train #{route.trainId}</p>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+                          <div className="flex items-center gap-3">
+                            {getRouteIcon(route.type)}
+                            <div>
+                              <h3 className="font-semibold text-foreground">{route.trainName}</h3>
+                              <p className="text-sm text-muted-foreground">Train #{route.trainId}</p>
+                            </div>
                           </div>
-                          {getRouteBadge(route.type, route.layoverStation)}
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge className={getCategoryColor(route.category)}>
+                              {getCategoryLabel(route.category)}
+                            </Badge>
+                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-background/50">
+                              {getConfidenceIcon(route.seatConfidence)}
+                              <span className={`text-sm font-semibold ${getConfidenceColor(route.seatConfidence)}`}>
+                                {route.seatConfidence}% Seat Confidence
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Reason why this route is recommended */}
+                        <div className="mb-4 px-3 py-2 bg-primary/10 rounded-lg border border-primary/20">
+                          <div className="flex items-start gap-2">
+                            <TrendingUp className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                            <p className="text-sm text-foreground/90">{route.reason}</p>
+                          </div>
                         </div>
                         
                         {route.type === 'direct' ? (
                           <>
                             {/* Direct Route Time and Duration */}
-                            <div className="flex items-center gap-6 mb-3">
-                              <div className="text-center">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 mb-3">
+                              <div className="text-center flex-shrink-0">
                                 <p className="font-bold text-lg text-foreground">{route.sourceStation.departure}</p>
-                                <p className="text-sm text-muted-foreground">{route.sourceStation.station_name}</p>
+                                <p className="text-sm text-muted-foreground truncate">{route.sourceStation.station_name}</p>
                               </div>
-                              <div className="flex-1 text-center">
+                              <div className="flex-1 text-center px-2">
                                 <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                                  <div className="w-2 h-2 bg-primary rounded-full"></div>
-                                  <div className="border-t border-dashed border-muted-foreground/30 flex-1"></div>
-                                  <Clock className="w-4 h-4" />
-                                  <span className="text-sm">{route.duration}</span>
-                                  <div className="border-t border-dashed border-muted-foreground/30 flex-1"></div>
-                                  <div className="w-2 h-2 bg-secondary rounded-full"></div>
+                                  <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0"></div>
+                                  <div className="border-t border-dashed border-muted-foreground/30 flex-1 min-w-[20px]"></div>
+                                  <Clock className="w-4 h-4 flex-shrink-0" />
+                                  <span className="text-sm font-medium whitespace-nowrap">{route.duration}</span>
+                                  <div className="border-t border-dashed border-muted-foreground/30 flex-1 min-w-[20px]"></div>
+                                  <div className="w-2 h-2 bg-secondary rounded-full flex-shrink-0"></div>
                                 </div>
                               </div>
-                              <div className="text-center">
+                              <div className="text-center flex-shrink-0">
                                 <p className="font-bold text-lg text-foreground">{route.destinationStation.arrival}</p>
-                                <p className="text-sm text-muted-foreground">{route.destinationStation.station_name}</p>
+                                <p className="text-sm text-muted-foreground truncate">{route.destinationStation.station_name}</p>
                               </div>
                             </div>
                           </>
@@ -275,21 +377,21 @@ const Results = () => {
                                     </Badge>
                                     <span className="text-sm font-medium">{segment.trainName}</span>
                                   </div>
-                                  <div className="flex items-center gap-6">
-                                    <div className="text-center">
+                                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+                                    <div className="text-center flex-shrink-0">
                                       <p className="font-bold text-foreground">{segment.departure}</p>
-                                      <p className="text-xs text-muted-foreground">{segment.from}</p>
+                                      <p className="text-xs text-muted-foreground truncate">{segment.from}</p>
                                     </div>
-                                    <div className="flex-1 text-center">
+                                    <div className="flex-1 text-center px-2">
                                       <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                                        <div className="w-1 h-1 bg-primary rounded-full"></div>
-                                        <div className="border-t border-dashed border-muted-foreground/30 flex-1"></div>
-                                        <div className="w-1 h-1 bg-secondary rounded-full"></div>
+                                        <div className="w-1 h-1 bg-primary rounded-full flex-shrink-0"></div>
+                                        <div className="border-t border-dashed border-muted-foreground/30 flex-1 min-w-[15px]"></div>
+                                        <div className="w-1 h-1 bg-secondary rounded-full flex-shrink-0"></div>
                                       </div>
                                     </div>
-                                    <div className="text-center">
+                                    <div className="text-center flex-shrink-0">
                                       <p className="font-bold text-foreground">{segment.arrival}</p>
-                                      <p className="text-xs text-muted-foreground">{segment.to}</p>
+                                      <p className="text-xs text-muted-foreground truncate">{segment.to}</p>
                                     </div>
                                   </div>
                                   {segIndex === 0 && route.layoverDuration && (
@@ -317,11 +419,20 @@ const Results = () => {
                       {/* Price and Action */}
                       <div className="text-center lg:text-right">
                         <div className="mb-4">
-                          <p className="text-2xl font-bold text-primary">₹{Math.round(route.distance * 2.5)}</p>
+                          <p className="text-2xl font-bold text-primary">₹{Math.round(route.distance * 0.5)}</p>
                           <p className="text-sm text-muted-foreground">per person</p>
                         </div>
-                        <Button className="btn-hero w-full lg:w-auto hover-scale">
-                          {route.type === 'layover' ? 'View Details' : 'Select Route'}
+                        <Button 
+                          className="btn-hero w-full lg:w-auto hover-scale"
+                          onClick={() => navigate('/booking', { 
+                            state: { 
+                              route, 
+                              searchData,
+                              price: Math.round(route.distance * 0.5)
+                            } 
+                          })}
+                        >
+                          {route.type === 'layover' ? 'Book Journey' : 'Book Now'}
                         </Button>
                       </div>
                     </div>
