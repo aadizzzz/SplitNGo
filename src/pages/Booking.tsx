@@ -194,8 +194,6 @@ const Booking = () => {
             const bookingData = {
               user_id: user.id,
               booking_reference: bookingRef,
-              payment_id: paymentId,
-              payment_status: 'captured',
               from_station: searchData.sourceStation,
               to_station: searchData.destinationStation,
               journey_date: searchData.date,
