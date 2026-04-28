@@ -169,7 +169,7 @@ const Booking = () => {
 
       // 2. Initialise Razorpay payment
       const checkoutOptions: any = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_N9XvE3uR1wH8l2', // Fallback to test key
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_Sil171erq5R7lk', // Updated fallback to correct test key
         amount: orderData.amount, // Amount from the server
         currency: orderData.currency,
         name: 'SplitNGo',
