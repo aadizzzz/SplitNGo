@@ -15,8 +15,8 @@ serve(async (req) => {
     const { amount, currency = 'INR', receipt } = await req.json()
 
     // Get secrets from Deno environment setup in Supabase dashboard
-    const keyId = Deno.env.get('RAZORPAY_KEY_ID')
-    const keySecret = Deno.env.get('RAZORPAY_KEY_SECRET')
+    const keyId = Deno.env.get('RAZORPAY_KEY_ID') || Deno.env.get('VITE_RAZORPAY_KEY_ID')
+    const keySecret = Deno.env.get('RAZORPAY_KEY_SECRET') || Deno.env.get('VITE_RAZORPAY_KEY_SECRET')
 
     if (!keyId || !keySecret) {
       throw new Error('Razorpay credentials not found in edge function secrets.')

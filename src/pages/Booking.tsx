@@ -157,7 +157,13 @@ const Booking = () => {
         }
       });
 
-      if (orderError || !orderData?.id) {
+      if (orderError) {
+        console.error('Edge function invocation failed:', orderError);
+        throw new Error(`Edge Function Error: ${orderError.message}`);
+      }
+      
+      if (!orderData?.id) {
+        console.error('Missing order ID in response:', orderData);
         throw new Error(orderData?.error || 'Failed to create secure payment order');
       }
 
