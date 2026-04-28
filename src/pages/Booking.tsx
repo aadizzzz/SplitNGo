@@ -149,19 +149,34 @@ const Booking = () => {
         return;
       }
 
-      // 1. Initialise Razorpay payment
+      // 1. Create Order via Supabase Edge Function
+      const { data: orderData, error: orderError } = await supabase.functions.invoke('create-razorpay-order', {
+        body: { 
+          amount: price * parseInt(searchData.passengers) * 100,
+          currency: 'INR'
+        }
+      });
+
+      if (orderError || !orderData?.id) {
+        throw new Error(orderData?.error || 'Failed to create secure payment order');
+      }
+
+      // 2. Initialise Razorpay payment
       const checkoutOptions: any = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_N9XvE3uR1wH8l2', // Fallback to test key
-        amount: price * parseInt(searchData.passengers) * 100, // Amount in paise
-        currency: 'INR',
+        amount: orderData.amount, // Amount from the server
+        currency: orderData.currency,
         name: 'SplitNGo',
         description: `Booking for Train ${route.trainId} - ${route.trainName}`,
         image: '/SplitNGo.png',
+        order_id: orderData.id, // The securely generated Order ID
         handler: async (response: any) => {
           // This code runs AFTER successful payment
           try {
             setLoading(true);
             const paymentId = response.razorpay_payment_id;
+            const orderId = response.razorpay_order_id;
+            const signature = response.razorpay_signature;
 
             // Generate booking reference
             const bookingRef = `SNG${Date.now().toString(36).toUpperCase()}`;
